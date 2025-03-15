@@ -14,6 +14,10 @@ let isLoading = false;
 let isLooping = false;
 let canvas;
 
+// Store original values for parameters that get scaled
+const ORIGINAL_STROKE_W = 1.4;
+const ORIGINAL_LIFE = 100;
+
 // Initialize sliders with default values
 document.addEventListener('DOMContentLoaded', function() {
     updateSliderValues();
@@ -83,8 +87,9 @@ function resetParameters() {
     res = 0.007;
     dmp = 0.75;
     pts = [];
-    life = 100;
-    strokeW = 1.4;
+    // Reset to original values before scaling
+    strokeW = ORIGINAL_STROKE_W;
+    life = ORIGINAL_LIFE;
     limit = 2000;
     alpha = 15;
     sides = 10;
@@ -211,8 +216,9 @@ function setup() {
     canvas.parent('canvasContainer');
     
     pxl = ss/400;
-    strokeW = strokeW * pxl;
-    life = life * pxl;
+    // Scale from original values
+    strokeW = ORIGINAL_STROKE_W * pxl;
+    life = ORIGINAL_LIFE * pxl;
     angleMode(DEGREES);
     angle = 360 / sides;
     background(0);
