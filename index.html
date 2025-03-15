@@ -13,27 +13,25 @@
         <div>Processing image...</div>
     </div>
     
-    <div id="main-controls">
+    <div id="controls-overlay">
         <div class="control-group">
-            <input type="file" id="imageUpload" accept="image/*" />
-            <select id="styleSelector">
+            <label for="imageUpload" class="upload-btn" title="Click to choose an image">
+                Choose Image
+                <input type="file" id="imageUpload" accept="image/*" />
+            </label>
+            <select id="styleSelector" title="Press 'K' to toggle style">
                 <option value="kaleidoscope">Kaleidoscope</option>
                 <option value="normal">Normal</option>
             </select>
         </div>
         <div class="control-group">
-            <button id="startBtn">Start Animation</button>
-            <button id="restartBtn">Restart</button>
-            <button id="saveBtn">Save Artwork</button>
+            <button id="startBtn" title="Space to play/pause">Start Animation</button>
+            <button id="restartBtn" title="Press 'R' to restart">Restart</button>
+            <button id="saveBtn" title="Ctrl/Cmd + S to save">Save Artwork</button>
         </div>
     </div>
     
-    <div id="app-container">
-        <div id="image-preview-container">
-            <div id="imagePreview"></div>
-        </div>
-        <div id="canvasContainer"></div>
-    </div>
+    <div id="canvasContainer"></div>
     
     <script src="script.js"></script>
 </body>

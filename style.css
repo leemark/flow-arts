@@ -2,17 +2,15 @@ html, body {
     width: 100%;
     height: 100%;
     margin: 0;
+    padding: 0;
     font-family: Arial, sans-serif;
     color: white;
+    overflow: hidden;
 }
 
 body {
     background-color: #111;
-    padding: 20px;
-    overflow-x: hidden;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    position: relative;
 }
 
 #loading-overlay {
@@ -45,92 +43,121 @@ body {
     100% { transform: rotate(360deg); }
 }
 
-#main-controls {
+#controls-overlay {
     position: fixed;
     top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 100;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 15px;
-    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    padding: 15px 20px;
+    border-radius: 12px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: opacity 0.3s ease;
+}
+
+#controls-overlay:hover {
+    opacity: 1;
 }
 
 .control-group {
     display: flex;
     gap: 10px;
+    align-items: center;
+    justify-content: center;
 }
 
-#main-controls input[type="file"] {
+.upload-btn {
+    background: #444;
     color: white;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s;
+    display: inline-block;
+}
+
+.upload-btn:hover {
+    background: #555;
+}
+
+.upload-btn input[type="file"] {
+    display: none;
 }
 
 #styleSelector {
-    background: #333;
+    background: #444;
     color: white;
     border: none;
     padding: 8px 15px;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
+    transition: background 0.3s;
+    font-size: 14px;
+}
+
+#styleSelector:hover {
+    background: #555;
 }
 
 button {
-    background: #333;
+    background: #444;
     color: white;
     border: none;
     padding: 8px 15px;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    min-width: 100px;
 }
 
 button:hover {
-    background: #444;
+    background: #555;
+    transform: translateY(-1px);
 }
 
-#app-container {
-    display: flex;
-    width: 100%;
-    margin-top: 80px;
-    gap: 20px;
-    justify-content: center;
-    align-items: flex-start;
-    flex-direction: column;
+button:active {
+    transform: translateY(1px);
 }
 
-#image-preview-container {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
+#startBtn {
+    background: #2a6b2a;
 }
 
-#imagePreview {
-    width: 200px;
-    height: 150px;
-    background-color: #222;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    border-radius: 4px;
+#startBtn:hover {
+    background: #338033;
 }
 
-#imagePreview img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
+#restartBtn {
+    background: #555;
+}
+
+#restartBtn:hover {
+    background: #666;
+}
+
+#saveBtn {
+    background: #2b4c7d;
+}
+
+#saveBtn:hover {
+    background: #345d99;
 }
 
 #canvasContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    height: 100%;
+    z-index: 1;
 }
 
 canvas {
-    margin: auto;
     display: block;
 }

@@ -14,6 +14,7 @@ let pxl;
 let isLoading = false;
 let isLooping = false;
 let canvas;
+let controlsTimeout;
 
 // Store original values for parameters that get scaled
 const ORIGINAL_STROKE_W = 1.4;
@@ -75,16 +76,6 @@ function resetAndSetup() {
     }
 }
 
-// Update image preview
-function updateImagePreview(imgSrc) {
-    const previewContainer = document.getElementById('imagePreview');
-    previewContainer.innerHTML = '';
-    
-    const imgPreview = document.createElement('img');
-    imgPreview.src = imgSrc;
-    previewContainer.appendChild(imgPreview);
-}
-
 // Setup file input handling
 document.getElementById('imageUpload').addEventListener('change', function(e) {
     const file = e.target.files[0];
@@ -105,13 +96,8 @@ document.getElementById('imageUpload').addEventListener('change', function(e) {
         
         const reader = new FileReader();
         reader.onload = function(event) {
-            const imgSrc = event.target.result;
-            
-            // Update image preview
-            updateImagePreview(imgSrc);
-            
             // Load the actual image for processing
-            loadImage(imgSrc, 
+            loadImage(event.target.result, 
                 // Success callback
                 function(loadedImg) {
                     img = loadedImg;
@@ -168,11 +154,11 @@ document.getElementById('saveBtn').addEventListener('click', function() {
 });
 
 function setup() {
-    let ss = min(windowWidth * 0.6, windowHeight * 0.8);
-    canvas = createCanvas(ss, ss);
+    // Create fullscreen canvas
+    canvas = createCanvas(windowWidth, windowHeight);
     canvas.parent('canvasContainer');
     
-    pxl = ss/400;
+    pxl = min(windowWidth, windowHeight)/400;
     // Scale from original values
     strokeW = ORIGINAL_STROKE_W * pxl;
     life = ORIGINAL_LIFE * pxl;
@@ -301,3 +287,48 @@ function windowResized() {
         noLoop();
     }
 }
+
+// Add after DOM content loaded event listener
+document.addEventListener('mousemove', function() {
+    const controls = document.getElementById('controls-overlay');
+    controls.style.opacity = '1';
+    
+    // Clear existing timeout
+    if (controlsTimeout) {
+        clearTimeout(controlsTimeout);
+    }
+    
+    // Set new timeout to hide controls
+    controlsTimeout = setTimeout(() => {
+        if (!isLoading) {  // Don't hide if loading
+            controls.style.opacity = '0.1';
+        }
+    }, 3000);
+});
+
+// Add after other event listeners
+document.addEventListener('keydown', function(e) {
+    // Only handle shortcuts if we have an image loaded
+    if (!img) return;
+    
+    switch(e.key.toLowerCase()) {
+        case ' ':  // Space bar
+            e.preventDefault();
+            document.getElementById('startBtn').click();
+            break;
+        case 'r':  // Restart
+            document.getElementById('restartBtn').click();
+            break;
+        case 's':  // Save (with modifier key)
+            if (e.ctrlKey || e.metaKey) {
+                e.preventDefault();
+                document.getElementById('saveBtn').click();
+            }
+            break;
+        case 'k':  // Toggle kaleidoscope mode
+            document.getElementById('styleSelector').value = 
+                document.getElementById('styleSelector').value === 'kaleidoscope' ? 'normal' : 'kaleidoscope';
+            document.getElementById('styleSelector').dispatchEvent(new Event('change'));
+            break;
+    }
+});
