@@ -17,7 +17,7 @@ let canvas;
 let controlsTimeout;
 
 // Store original values for parameters that get scaled
-const ORIGINAL_STROKE_W = 1.4;
+const ORIGINAL_STROKE_W = 0.4;
 const ORIGINAL_LIFE = 100;
 const ORIGINAL_BORDER = -100;
 
