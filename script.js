@@ -17,6 +17,17 @@ let canvas;
 // Store original values for parameters that get scaled
 const ORIGINAL_STROKE_W = 1.4;
 const ORIGINAL_LIFE = 100;
+const ORIGINAL_BORDER = -100;
+
+// Define parameter ranges to prevent extreme values
+const PARAM_RANGES = {
+    sides: { min: 3, max: 20 },
+    dmp: { min: 0.1, max: 0.95 },
+    res: { min: 0.001, max: 0.02 },
+    life: { min: 50, max: 200 },
+    limit: { min: 1000, max: 5000 },
+    alpha: { min: 5, max: 50 }
+};
 
 // Initialize sliders with default values
 document.addEventListener('DOMContentLoaded', function() {
@@ -69,6 +80,24 @@ function updateSliderValues() {
     document.getElementById('alphaValue').textContent = alpha;
 }
 
+// Validate parameter values to ensure they're within acceptable ranges
+function validateParameters() {
+    sides = clampValue(sides, PARAM_RANGES.sides.min, PARAM_RANGES.sides.max);
+    dmp = clampValue(dmp, PARAM_RANGES.dmp.min, PARAM_RANGES.dmp.max);
+    res = clampValue(res, PARAM_RANGES.res.min, PARAM_RANGES.res.max);
+    life = clampValue(life, PARAM_RANGES.life.min, PARAM_RANGES.life.max);
+    limit = clampValue(limit, PARAM_RANGES.limit.min, PARAM_RANGES.limit.max);
+    alpha = clampValue(alpha, PARAM_RANGES.alpha.min, PARAM_RANGES.alpha.max);
+    
+    // Update sliders to reflect any clamped values
+    updateSliderValues();
+}
+
+// Helper function to clamp a value between min and max
+function clampValue(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+}
+
 // Show loading indicator
 function showLoading() {
     isLoading = true;
@@ -83,7 +112,7 @@ function hideLoading() {
 
 // Reset all animation parameters to initial values
 function resetParameters() {
-    border = -100;
+    border = ORIGINAL_BORDER;
     res = 0.007;
     dmp = 0.75;
     pts = [];
@@ -110,12 +139,16 @@ function resetAndSetup() {
 
 // Apply settings from sliders
 function applySettings() {
+    // Get values from sliders
     sides = parseInt(document.getElementById('sidesSlider').value);
     dmp = parseFloat(document.getElementById('dampingSlider').value);
     res = parseFloat(document.getElementById('resolutionSlider').value);
     life = parseInt(document.getElementById('lifeSlider').value);
     limit = parseInt(document.getElementById('limitSlider').value);
     alpha = parseInt(document.getElementById('alphaSlider').value);
+    
+    // Validate all parameters
+    validateParameters();
     
     if (img) {
         // Store current animation state
@@ -149,6 +182,18 @@ function updateImagePreview(imgSrc) {
 document.getElementById('imageUpload').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (file) {
+        // Validate file type
+        if (!file.type.match('image.*')) {
+            alert('Please select a valid image file.');
+            return;
+        }
+        
+        // Check file size (limit to 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+            alert('Image file is too large. Please select an image smaller than 10MB.');
+            return;
+        }
+        
         showLoading();
         
         const reader = new FileReader();
@@ -159,12 +204,26 @@ document.getElementById('imageUpload').addEventListener('change', function(e) {
             updateImagePreview(imgSrc);
             
             // Load the actual image for processing
-            loadImage(imgSrc, function(loadedImg) {
-                img = loadedImg;
-                resetAndSetup();
-                hideLoading();
-            });
+            loadImage(imgSrc, 
+                // Success callback
+                function(loadedImg) {
+                    img = loadedImg;
+                    resetAndSetup();
+                    hideLoading();
+                },
+                // Error callback
+                function() {
+                    alert('Failed to load image. Please try another image.');
+                    hideLoading();
+                }
+            );
         };
+        
+        reader.onerror = function() {
+            alert('Error reading file. Please try again.');
+            hideLoading();
+        };
+        
         reader.readAsDataURL(file);
     }
 });
@@ -219,6 +278,11 @@ function setup() {
     // Scale from original values
     strokeW = ORIGINAL_STROKE_W * pxl;
     life = ORIGINAL_LIFE * pxl;
+    border = ORIGINAL_BORDER * pxl;
+    
+    // Validate parameters before using them
+    validateParameters();
+    
     angleMode(DEGREES);
     angle = 360 / sides;
     background(0);
@@ -261,25 +325,41 @@ function draw() {
 }
 
 function makept() {
-  let tmp = {
-    position: new p5.Vector(
-      random(border, width - border),
-      random(border, height - border)
-    ),
-    velocity: new p5.Vector(),
-    life: random(0, life),
-    color: color(random(255), random(255), random(255), 20)
-  };
-  let sx = map(tmp.position.x, 0, width, 0, img.width);
-  let sy = map(tmp.position.y, 0, height, 0, img.height);
-  tmp.color = color(img.get(sx, sy));
-  tmp.color.setAlpha(alpha);
-  return tmp;
+  try {
+    let tmp = {
+      position: new p5.Vector(
+        random(border, width - border),
+        random(border, height - border)
+      ),
+      velocity: new p5.Vector(),
+      life: random(0, life),
+      color: color(random(255), random(255), random(255), 20)
+    };
+    
+    // Safely get color from image with bounds checking
+    let sx = constrain(map(tmp.position.x, 0, width, 0, img.width), 0, img.width - 1);
+    let sy = constrain(map(tmp.position.y, 0, height, 0, img.height), 0, img.height - 1);
+    
+    tmp.color = color(img.get(sx, sy));
+    tmp.color.setAlpha(alpha);
+    return tmp;
+  } catch (error) {
+    console.error("Error creating point:", error);
+    // Return a fallback point with a default color if there's an error
+    return {
+      position: new p5.Vector(width/2, height/2),
+      velocity: new p5.Vector(),
+      life: random(0, life),
+      color: color(200, 200, 200, alpha)
+    };
+  }
 }
+
 function move(pt) {
   pt.position.add(pt.velocity);
   pt.life--;
 }
+
 function clean() {
   for (let i = pts.length - 1; i >= 0; i--) {
     if (pts[i].life <= 0) {
@@ -289,5 +369,11 @@ function clean() {
 }
 
 function windowResized() {
+    const wasLooping = isLooping;
     setup();
+    if (wasLooping) {
+        loop();
+    } else {
+        noLoop();
+    }
 }
