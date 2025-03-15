@@ -193,27 +193,22 @@ function draw() {
     angle = 360 / sides;
     translate(width / 2, height / 2);
     rotate(angle / 2);
-  } else {
-    // Normal style just centers the drawing
-    translate(width / 2, height / 2);
-  }
-  
-  for(i=0;i<4;i++){
-    pts.push(makept());
-  }
-  
-  for (let pt of pts) {
-    let x = pt.position.x;
-    let y = pt.position.y;
-    let v = new p5.Vector();
-    v.x = map(noise(x * res, y * res, 1), 0, 1, -1, 1);
-    v.y = map(noise(x * res, y * res, 10), 0, 1, -1, 1);
-    pt.velocity.add(v);
-    pt.velocity.mult(dmp);
-    move(pt);
-    stroke(pt.color);
     
-    if (style === 'kaleidoscope') {
+    for(i=0;i<4;i++){
+      pts.push(makept(true));
+    }
+    
+    for (let pt of pts) {
+      let x = pt.position.x;
+      let y = pt.position.y;
+      let v = new p5.Vector();
+      v.x = map(noise(x * res, y * res, 1), 0, 1, -1, 1);
+      v.y = map(noise(x * res, y * res, 10), 0, 1, -1, 1);
+      pt.velocity.add(v);
+      pt.velocity.mult(dmp);
+      move(pt);
+      stroke(pt.color);
+      
       // Kaleidoscope style with multiple rotated copies
       for (let i = 0; i < sides; i++) {
         push();
@@ -225,17 +220,35 @@ function draw() {
           point(x, y);
         pop();
       }
-    } else {
+    }
+  } else {
+    // Normal style - no translation to center
+    
+    for(i=0;i<4;i++){
+      pts.push(makept(false));
+    }
+    
+    for (let pt of pts) {
+      let x = pt.position.x;
+      let y = pt.position.y;
+      let v = new p5.Vector();
+      v.x = map(noise(x * res, y * res, 1), 0, 1, -1, 1);
+      v.y = map(noise(x * res, y * res, 10), 0, 1, -1, 1);
+      pt.velocity.add(v);
+      pt.velocity.mult(dmp);
+      move(pt);
+      stroke(pt.color);
+      
       // Normal style with just one point
       point(x, y);
     }
-    
-    clean();
   }
+  
+  clean();
   if(frameCount > limit) noLoop();
 }
 
-function makept() {
+function makept(isKaleidoscope) {
   try {
     let tmp = {
       position: new p5.Vector(
