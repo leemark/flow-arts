@@ -7,10 +7,75 @@ let life = 100;
 let strokeW = 1.4;
 let limit = 2000;
 let alpha = 15;
-let sides;
+let sides = 10;
 let angle;
 let pxl;
+let isLoading = false;
 let isLooping = false;
+let canvas;
+
+// Initialize sliders with default values
+document.addEventListener('DOMContentLoaded', function() {
+    updateSliderValues();
+    
+    // Add event listeners for sliders to update displayed values
+    document.getElementById('sidesSlider').addEventListener('input', function() {
+        document.getElementById('sidesValue').textContent = this.value;
+    });
+    
+    document.getElementById('dampingSlider').addEventListener('input', function() {
+        document.getElementById('dampingValue').textContent = this.value;
+    });
+    
+    document.getElementById('resolutionSlider').addEventListener('input', function() {
+        document.getElementById('resolutionValue').textContent = parseFloat(this.value).toFixed(3);
+    });
+    
+    document.getElementById('lifeSlider').addEventListener('input', function() {
+        document.getElementById('lifeValue').textContent = this.value;
+    });
+    
+    document.getElementById('limitSlider').addEventListener('input', function() {
+        document.getElementById('limitValue').textContent = this.value;
+    });
+    
+    document.getElementById('alphaSlider').addEventListener('input', function() {
+        document.getElementById('alphaValue').textContent = this.value;
+    });
+});
+
+// Update slider values to match current parameters
+function updateSliderValues() {
+    document.getElementById('sidesSlider').value = sides;
+    document.getElementById('sidesValue').textContent = sides;
+    
+    document.getElementById('dampingSlider').value = dmp;
+    document.getElementById('dampingValue').textContent = dmp;
+    
+    document.getElementById('resolutionSlider').value = res;
+    document.getElementById('resolutionValue').textContent = res.toFixed(3);
+    
+    document.getElementById('lifeSlider').value = life;
+    document.getElementById('lifeValue').textContent = life;
+    
+    document.getElementById('limitSlider').value = limit;
+    document.getElementById('limitValue').textContent = limit;
+    
+    document.getElementById('alphaSlider').value = alpha;
+    document.getElementById('alphaValue').textContent = alpha;
+}
+
+// Show loading indicator
+function showLoading() {
+    isLoading = true;
+    document.getElementById('loading-overlay').style.display = 'flex';
+}
+
+// Hide loading indicator
+function hideLoading() {
+    isLoading = false;
+    document.getElementById('loading-overlay').style.display = 'none';
+}
 
 // Reset all animation parameters to initial values
 function resetParameters() {
@@ -22,8 +87,10 @@ function resetParameters() {
     strokeW = 1.4;
     limit = 2000;
     alpha = 15;
+    sides = 10;
     isLooping = false;
     frameCount = 0;
+    updateSliderValues();
 }
 
 // Complete reset and setup with current image
@@ -36,15 +103,61 @@ function resetAndSetup() {
     }
 }
 
+// Apply settings from sliders
+function applySettings() {
+    sides = parseInt(document.getElementById('sidesSlider').value);
+    dmp = parseFloat(document.getElementById('dampingSlider').value);
+    res = parseFloat(document.getElementById('resolutionSlider').value);
+    life = parseInt(document.getElementById('lifeSlider').value);
+    limit = parseInt(document.getElementById('limitSlider').value);
+    alpha = parseInt(document.getElementById('alphaSlider').value);
+    
+    if (img) {
+        // Store current animation state
+        const wasLooping = isLooping;
+        
+        // Restart with new settings
+        setup();
+        
+        // Restore animation state
+        if (wasLooping) {
+            loop();
+            isLooping = true;
+            document.getElementById('startBtn').textContent = 'Pause';
+        } else {
+            noLoop();
+        }
+    }
+}
+
+// Update image preview
+function updateImagePreview(imgSrc) {
+    const previewContainer = document.getElementById('imagePreview');
+    previewContainer.innerHTML = '';
+    
+    const imgPreview = document.createElement('img');
+    imgPreview.src = imgSrc;
+    previewContainer.appendChild(imgPreview);
+}
+
 // Setup file input handling
 document.getElementById('imageUpload').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (file) {
+        showLoading();
+        
         const reader = new FileReader();
         reader.onload = function(event) {
-            loadImage(event.target.result, function(loadedImg) {
+            const imgSrc = event.target.result;
+            
+            // Update image preview
+            updateImagePreview(imgSrc);
+            
+            // Load the actual image for processing
+            loadImage(imgSrc, function(loadedImg) {
                 img = loadedImg;
                 resetAndSetup();
+                hideLoading();
             });
         };
         reader.readAsDataURL(file);
@@ -77,6 +190,15 @@ document.getElementById('restartBtn').addEventListener('click', function() {
     resetAndSetup();
 });
 
+// Setup apply settings button
+document.getElementById('applySettingsBtn').addEventListener('click', function() {
+    if (!img) {
+        alert('Please upload an image first!');
+        return;
+    }
+    applySettings();
+});
+
 document.getElementById('saveBtn').addEventListener('click', function() {
     if (canvas) {
         saveCanvas('flow-art', 'jpg');
@@ -84,20 +206,15 @@ document.getElementById('saveBtn').addEventListener('click', function() {
 });
 
 function setup() {
-    let ss = min(windowWidth * 0.8, windowHeight * 0.8);
-    const canvas = createCanvas(ss, ss);
+    let ss = min(windowWidth * 0.6, windowHeight * 0.8);
+    canvas = createCanvas(ss, ss);
     canvas.parent('canvasContainer');
     
     pxl = ss/400;
     strokeW = strokeW * pxl;
     life = life * pxl;
-    sides = random([8,10,12,14,16]);
     angleMode(DEGREES);
     angle = 360 / sides;
-    res += random(-0.005, 0.005);
-    dmp += random(-0.05, 0.1);
-    limit += int(random(-100, 300));
-    alpha += random(-5, 15); 
     background(0);
     pts = [];
     frameCount = 0;
