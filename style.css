@@ -45,7 +45,7 @@ body {
     100% { transform: rotate(360deg); }
 }
 
-#controls {
+#main-controls {
     position: fixed;
     top: 20px;
     z-index: 100;
@@ -53,11 +53,26 @@ body {
     padding: 15px;
     border-radius: 8px;
     display: flex;
+    flex-direction: column;
     gap: 10px;
 }
 
-#controls input[type="file"] {
+.control-group {
+    display: flex;
+    gap: 10px;
+}
+
+#main-controls input[type="file"] {
     color: white;
+}
+
+#styleSelector {
+    background: #333;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
 }
 
 button {
@@ -81,22 +96,20 @@ button:hover {
     gap: 20px;
     justify-content: center;
     align-items: flex-start;
+    flex-direction: column;
 }
 
-#settings-panel {
-    background: rgba(0, 0, 0, 0.7);
-    padding: 20px;
-    border-radius: 8px;
-    width: 250px;
-    max-height: 80vh;
-    overflow-y: auto;
+#image-preview-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
 }
 
 #imagePreview {
-    width: 100%;
+    width: 200px;
     height: 150px;
     background-color: #222;
-    margin: 10px 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -110,52 +123,8 @@ button:hover {
     object-fit: contain;
 }
 
-.slider-container {
-    margin-bottom: 15px;
-}
-
-.slider-container label {
-    display: block;
-    margin-bottom: 5px;
-}
-
-.slider-container input[type="range"] {
-    width: 100%;
-    background: #333;
-    height: 5px;
-    border-radius: 5px;
-    appearance: none;
-}
-
-.slider-container input[type="range"]::-webkit-slider-thumb {
-    appearance: none;
-    width: 15px;
-    height: 15px;
-    background: #fff;
-    border-radius: 50%;
-    cursor: pointer;
-}
-
-.slider-container input[type="range"]::-moz-range-thumb {
-    width: 15px;
-    height: 15px;
-    background: #fff;
-    border-radius: 50%;
-    cursor: pointer;
-}
-
-#applySettingsBtn {
-    width: 100%;
-    margin-top: 10px;
-    background: #4CAF50;
-}
-
-#applySettingsBtn:hover {
-    background: #3e8e41;
-}
-
 #canvasContainer {
-    flex-grow: 1;
+    width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;

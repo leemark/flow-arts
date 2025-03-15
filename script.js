@@ -1,5 +1,6 @@
 let img;
 let border = -100;
+let style = 'kaleidoscope'; // Can be 'kaleidoscope' or 'normal'
 let res = 0.007;
 let dmp = 0.75;
 let pts = [];
@@ -19,84 +20,22 @@ const ORIGINAL_STROKE_W = 1.4;
 const ORIGINAL_LIFE = 100;
 const ORIGINAL_BORDER = -100;
 
-// Define parameter ranges to prevent extreme values
-const PARAM_RANGES = {
-    sides: { min: 3, max: 20 },
-    dmp: { min: 0.1, max: 0.95 },
-    res: { min: 0.001, max: 0.02 },
-    life: { min: 50, max: 200 },
-    limit: { min: 1000, max: 5000 },
-    alpha: { min: 5, max: 50 }
-};
-
-// Initialize sliders with default values
+// Initialize style selector
 document.addEventListener('DOMContentLoaded', function() {
-    updateSliderValues();
-    
-    // Add event listeners for sliders to update displayed values
-    document.getElementById('sidesSlider').addEventListener('input', function() {
-        document.getElementById('sidesValue').textContent = this.value;
-    });
-    
-    document.getElementById('dampingSlider').addEventListener('input', function() {
-        document.getElementById('dampingValue').textContent = this.value;
-    });
-    
-    document.getElementById('resolutionSlider').addEventListener('input', function() {
-        document.getElementById('resolutionValue').textContent = parseFloat(this.value).toFixed(3);
-    });
-    
-    document.getElementById('lifeSlider').addEventListener('input', function() {
-        document.getElementById('lifeValue').textContent = this.value;
-    });
-    
-    document.getElementById('limitSlider').addEventListener('input', function() {
-        document.getElementById('limitValue').textContent = this.value;
-    });
-    
-    document.getElementById('alphaSlider').addEventListener('input', function() {
-        document.getElementById('alphaValue').textContent = this.value;
+    // Setup style selector
+    document.getElementById('styleSelector').addEventListener('change', function() {
+        style = this.value;
+        if (img) {
+            // Restart with new style
+            setup();
+            if (isLooping) {
+                loop();
+            } else {
+                noLoop();
+            }
+        }
     });
 });
-
-// Update slider values to match current parameters
-function updateSliderValues() {
-    document.getElementById('sidesSlider').value = sides;
-    document.getElementById('sidesValue').textContent = sides;
-    
-    document.getElementById('dampingSlider').value = dmp;
-    document.getElementById('dampingValue').textContent = dmp;
-    
-    document.getElementById('resolutionSlider').value = res;
-    document.getElementById('resolutionValue').textContent = res.toFixed(3);
-    
-    document.getElementById('lifeSlider').value = life;
-    document.getElementById('lifeValue').textContent = life;
-    
-    document.getElementById('limitSlider').value = limit;
-    document.getElementById('limitValue').textContent = limit;
-    
-    document.getElementById('alphaSlider').value = alpha;
-    document.getElementById('alphaValue').textContent = alpha;
-}
-
-// Validate parameter values to ensure they're within acceptable ranges
-function validateParameters() {
-    sides = clampValue(sides, PARAM_RANGES.sides.min, PARAM_RANGES.sides.max);
-    dmp = clampValue(dmp, PARAM_RANGES.dmp.min, PARAM_RANGES.dmp.max);
-    res = clampValue(res, PARAM_RANGES.res.min, PARAM_RANGES.res.max);
-    life = clampValue(life, PARAM_RANGES.life.min, PARAM_RANGES.life.max);
-    limit = clampValue(limit, PARAM_RANGES.limit.min, PARAM_RANGES.limit.max);
-    alpha = clampValue(alpha, PARAM_RANGES.alpha.min, PARAM_RANGES.alpha.max);
-    
-    // Update sliders to reflect any clamped values
-    updateSliderValues();
-}
-
-// Helper function to clamp a value between min and max
-function clampValue(value, min, max) {
-    return Math.min(Math.max(value, min), max);
-}
 
 // Show loading indicator
 function showLoading() {
@@ -110,21 +49,20 @@ function hideLoading() {
     document.getElementById('loading-overlay').style.display = 'none';
 }
 
-// Reset all animation parameters to initial values
+// Reset all animation parameters using randomized values
 function resetParameters() {
     border = ORIGINAL_BORDER;
-    res = 0.007;
-    dmp = 0.75;
+    res = random(0.003, 0.012);
+    dmp = random(0.65, 0.85);
     pts = [];
     // Reset to original values before scaling
     strokeW = ORIGINAL_STROKE_W;
     life = ORIGINAL_LIFE;
-    limit = 2000;
-    alpha = 15;
-    sides = 10;
+    limit = random(1800, 3000);
+    alpha = random(10, 25);
+    sides = floor(random(5, 16));
     isLooping = false;
     frameCount = 0;
-    updateSliderValues();
 }
 
 // Complete reset and setup with current image
@@ -134,37 +72,6 @@ function resetAndSetup() {
         setup();
         noLoop();
         document.getElementById('startBtn').textContent = 'Start Animation';
-    }
-}
-
-// Apply settings from sliders
-function applySettings() {
-    // Get values from sliders
-    sides = parseInt(document.getElementById('sidesSlider').value);
-    dmp = parseFloat(document.getElementById('dampingSlider').value);
-    res = parseFloat(document.getElementById('resolutionSlider').value);
-    life = parseInt(document.getElementById('lifeSlider').value);
-    limit = parseInt(document.getElementById('limitSlider').value);
-    alpha = parseInt(document.getElementById('alphaSlider').value);
-    
-    // Validate all parameters
-    validateParameters();
-    
-    if (img) {
-        // Store current animation state
-        const wasLooping = isLooping;
-        
-        // Restart with new settings
-        setup();
-        
-        // Restore animation state
-        if (wasLooping) {
-            loop();
-            isLooping = true;
-            document.getElementById('startBtn').textContent = 'Pause';
-        } else {
-            noLoop();
-        }
     }
 }
 
@@ -254,15 +161,6 @@ document.getElementById('restartBtn').addEventListener('click', function() {
     resetAndSetup();
 });
 
-// Setup apply settings button
-document.getElementById('applySettingsBtn').addEventListener('click', function() {
-    if (!img) {
-        alert('Please upload an image first!');
-        return;
-    }
-    applySettings();
-});
-
 document.getElementById('saveBtn').addEventListener('click', function() {
     if (canvas) {
         saveCanvas('flow-art', 'jpg');
@@ -280,9 +178,6 @@ function setup() {
     life = ORIGINAL_LIFE * pxl;
     border = ORIGINAL_BORDER * pxl;
     
-    // Validate parameters before using them
-    validateParameters();
-    
     angleMode(DEGREES);
     angle = 360 / sides;
     background(0);
@@ -293,12 +188,20 @@ function setup() {
 function draw() {
   blendMode(SCREEN);
   strokeWeight(strokeW);
-  angle = 360 / sides;
-  translate(width / 2, height / 2);
-  rotate(angle / 2);
+  
+  if (style === 'kaleidoscope') {
+    angle = 360 / sides;
+    translate(width / 2, height / 2);
+    rotate(angle / 2);
+  } else {
+    // Normal style just centers the drawing
+    translate(width / 2, height / 2);
+  }
+  
   for(i=0;i<4;i++){
     pts.push(makept());
   }
+  
   for (let pt of pts) {
     let x = pt.position.x;
     let y = pt.position.y;
@@ -309,16 +212,24 @@ function draw() {
     pt.velocity.mult(dmp);
     move(pt);
     stroke(pt.color);
-    for (let i = 0; i < sides; i++) {
-      push();
-        rotate(angle * i);
-        if (i % 2 == 0) {
-          scale(-1, 1);
-        }
-        scale(.5, .5);
-        point(x, y);
-      pop();
+    
+    if (style === 'kaleidoscope') {
+      // Kaleidoscope style with multiple rotated copies
+      for (let i = 0; i < sides; i++) {
+        push();
+          rotate(angle * i);
+          if (i % 2 == 0) {
+            scale(-1, 1);
+          }
+          scale(.5, .5);
+          point(x, y);
+        pop();
+      }
+    } else {
+      // Normal style with just one point
+      point(x, y);
     }
+    
     clean();
   }
   if(frameCount > limit) noLoop();
