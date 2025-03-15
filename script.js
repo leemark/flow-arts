@@ -103,11 +103,17 @@ document.getElementById('imageUpload').addEventListener('change', function(e) {
                     img = loadedImg;
                     resetAndSetup();
                     hideLoading();
+                    // Start animation automatically
+                    loop();
+                    isLooping = true;
+                    document.getElementById('startBtn').textContent = 'Pause';
                 },
                 // Error callback
                 function() {
                     alert('Failed to load image. Please try another image.');
                     hideLoading();
+                    img = null;
+                    noLoop();
                 }
             );
         };
@@ -115,6 +121,8 @@ document.getElementById('imageUpload').addEventListener('change', function(e) {
         reader.onerror = function() {
             alert('Error reading file. Please try again.');
             hideLoading();
+            img = null;
+            noLoop();
         };
         
         reader.readAsDataURL(file);
@@ -169,9 +177,20 @@ function setup() {
     background(0);
     pts = [];
     frameCount = 0;
+
+    // Don't start drawing until we have an image
+    if (!img) {
+        noLoop();
+    }
 }
 
 function draw() {
+  // Don't draw if no image is loaded
+  if (!img) {
+    noLoop();
+    return;
+  }
+
   blendMode(SCREEN);
   strokeWeight(strokeW);
   
@@ -236,6 +255,12 @@ function draw() {
 
 function makept(isKaleidoscope) {
   try {
+    // Don't create points if no image is loaded
+    if (!img) {
+      console.warn('Attempted to create point without image loaded');
+      return null;
+    }
+
     let tmp = {
       position: new p5.Vector(
         random(border, width - border),
@@ -247,11 +272,17 @@ function makept(isKaleidoscope) {
     };
     
     // Safely get color from image with bounds checking
-    let sx = constrain(map(tmp.position.x, 0, width, 0, img.width), 0, img.width - 1);
-    let sy = constrain(map(tmp.position.y, 0, height, 0, img.height), 0, img.height - 1);
+    if (img.width && img.height) {
+      let sx = constrain(map(tmp.position.x, 0, width, 0, img.width), 0, img.width - 1);
+      let sy = constrain(map(tmp.position.y, 0, height, 0, img.height), 0, img.height - 1);
+      
+      let imgColor = img.get(sx, sy);
+      if (imgColor) {
+        tmp.color = color(imgColor);
+        tmp.color.setAlpha(alpha);
+      }
+    }
     
-    tmp.color = color(img.get(sx, sy));
-    tmp.color.setAlpha(alpha);
     return tmp;
   } catch (error) {
     console.error("Error creating point:", error);
