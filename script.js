@@ -5,7 +5,7 @@ let res = 0.007;
 let dmp = 0.75;
 let pts = [];
 let life = 100;
-let strokeW = 0.4;
+let strokeW = 0.8;
 let limit = 2000;
 let alpha = 15;
 let sides = 10;
@@ -17,7 +17,7 @@ let canvas;
 let controlsTimeout;
 
 // Store original values for parameters that get scaled
-const ORIGINAL_STROKE_W = 0.4;
+const ORIGINAL_STROKE_W = 0.8;
 const ORIGINAL_LIFE = 100;
 const ORIGINAL_BORDER = -100;
 
