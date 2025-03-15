@@ -12,6 +12,30 @@ let angle;
 let pxl;
 let isLooping = false;
 
+// Reset all animation parameters to initial values
+function resetParameters() {
+    border = -100;
+    res = 0.007;
+    dmp = 0.75;
+    pts = [];
+    life = 100;
+    strokeW = 1.4;
+    limit = 2000;
+    alpha = 15;
+    isLooping = false;
+    frameCount = 0;
+}
+
+// Complete reset and setup with current image
+function resetAndSetup() {
+    resetParameters();
+    if (img) {
+        setup();
+        noLoop();
+        document.getElementById('startBtn').textContent = 'Start Animation';
+    }
+}
+
 // Setup file input handling
 document.getElementById('imageUpload').addEventListener('change', function(e) {
     const file = e.target.files[0];
@@ -20,8 +44,7 @@ document.getElementById('imageUpload').addEventListener('change', function(e) {
         reader.onload = function(event) {
             loadImage(event.target.result, function(loadedImg) {
                 img = loadedImg;
-                setup();
-                noLoop();
+                resetAndSetup();
             });
         };
         reader.readAsDataURL(file);
@@ -43,6 +66,15 @@ document.getElementById('startBtn').addEventListener('click', function() {
         isLooping = false;
         this.textContent = 'Start Animation';
     }
+});
+
+// Setup restart button
+document.getElementById('restartBtn').addEventListener('click', function() {
+    if (!img) {
+        alert('Please upload an image first!');
+        return;
+    }
+    resetAndSetup();
 });
 
 document.getElementById('saveBtn').addEventListener('click', function() {
