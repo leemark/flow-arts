@@ -1,6 +1,6 @@
 let img;
 let border = -100;
-let style = 'kaleidoscope'; // Can be 'kaleidoscope' or 'normal'
+let style = 'normal'; // Can be 'kaleidoscope' or 'normal'
 let res = 0.007;
 let dmp = 0.75;
 let pts = [];
