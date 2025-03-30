@@ -23,6 +23,11 @@ let repulsionStrength = 0.5; // Adjust as needed
 // Sliders refs
 let resSlider, resValueSpan;
 let dmpSlider, dmpValueSpan;
+let alphaSlider, alphaValueSpan;
+let limitSlider, limitValueSpan;
+let repRadiusSlider, repRadiusValueSpan;
+let repStrengthSlider, repStrengthValueSpan;
+let sidesSlider, sidesValueSpan;
 
 // Store original values for parameters that get scaled
 const ORIGINAL_STROKE_W = 0.8;
@@ -53,12 +58,32 @@ document.addEventListener('DOMContentLoaded', function() {
     resValueSpan = document.getElementById('resValue');
     dmpSlider = document.getElementById('dmpSlider');
     dmpValueSpan = document.getElementById('dmpValue');
+    alphaSlider = document.getElementById('alphaSlider');
+    alphaValueSpan = document.getElementById('alphaValue');
+    limitSlider = document.getElementById('limitSlider');
+    limitValueSpan = document.getElementById('limitValue');
+    repRadiusSlider = document.getElementById('repRadiusSlider');
+    repRadiusValueSpan = document.getElementById('repRadiusValue');
+    repStrengthSlider = document.getElementById('repStrengthSlider');
+    repStrengthValueSpan = document.getElementById('repStrengthValue');
+    sidesSlider = document.getElementById('sidesSlider');
+    sidesValueSpan = document.getElementById('sidesValue');
 
     // Initial slider values
     resSlider.value = res;
     resValueSpan.textContent = parseFloat(res).toFixed(4);
     dmpSlider.value = dmp;
     dmpValueSpan.textContent = parseFloat(dmp).toFixed(2);
+    alphaSlider.value = alpha;
+    alphaValueSpan.textContent = alpha;
+    limitSlider.value = limit;
+    limitValueSpan.textContent = limit;
+    repRadiusSlider.value = repulsionRadius;
+    repRadiusValueSpan.textContent = repulsionRadius;
+    repStrengthSlider.value = repulsionStrength;
+    repStrengthValueSpan.textContent = parseFloat(repulsionStrength).toFixed(1);
+    sidesSlider.value = sides;
+    sidesValueSpan.textContent = sides;
 
     // Slider listeners
     resSlider.addEventListener('input', function() {
@@ -69,6 +94,32 @@ document.addEventListener('DOMContentLoaded', function() {
     dmpSlider.addEventListener('input', function() {
         dmp = parseFloat(this.value);
         dmpValueSpan.textContent = parseFloat(dmp).toFixed(2);
+    });
+
+    alphaSlider.addEventListener('input', function() {
+        alpha = parseInt(this.value);
+        alphaValueSpan.textContent = alpha;
+    });
+
+    limitSlider.addEventListener('input', function() {
+        limit = parseInt(this.value);
+        limitValueSpan.textContent = limit;
+    });
+
+    repRadiusSlider.addEventListener('input', function() {
+        repulsionRadius = parseInt(this.value);
+        repRadiusValueSpan.textContent = repulsionRadius;
+    });
+
+    repStrengthSlider.addEventListener('input', function() {
+        repulsionStrength = parseFloat(this.value);
+        repStrengthValueSpan.textContent = parseFloat(repulsionStrength).toFixed(1);
+    });
+
+    sidesSlider.addEventListener('input', function() {
+        sides = parseInt(this.value);
+        sidesValueSpan.textContent = sides;
+        // Angle needs recalculation, will happen in draw()
     });
 });
 
@@ -98,13 +149,26 @@ function resetParameters() {
     sides = floor(random(5, 16));
     isLooping = false;
     frameCount = 0;
+    // Reset mouse interaction params too
+    repulsionRadius = random(50, 200);
+    repulsionStrength = random(0.2, 1.0);
 
     // Update sliders to reflect randomized values
-    if (resSlider && dmpSlider) {
+    if (resSlider) { // Check if sliders exist
         resSlider.value = res;
         resValueSpan.textContent = parseFloat(res).toFixed(4);
         dmpSlider.value = dmp;
         dmpValueSpan.textContent = parseFloat(dmp).toFixed(2);
+        alphaSlider.value = alpha;
+        alphaValueSpan.textContent = alpha;
+        limitSlider.value = limit;
+        limitValueSpan.textContent = limit;
+        repRadiusSlider.value = repulsionRadius;
+        repRadiusValueSpan.textContent = repulsionRadius;
+        repStrengthSlider.value = repulsionStrength;
+        repStrengthValueSpan.textContent = parseFloat(repulsionStrength).toFixed(1);
+        sidesSlider.value = sides;
+        sidesValueSpan.textContent = sides;
     }
 }
 
@@ -242,7 +306,7 @@ function draw() {
   let mouseVec = createVector(mouseX, mouseY);
 
   if (style === 'kaleidoscope') {
-    angle = 360 / sides;
+    angle = 360 / sides; // Recalculate angle in case sides changed
     translate(width / 2, height / 2);
     rotate(angle / 2);
     

@@ -161,3 +161,67 @@ button:active {
 canvas {
     display: block;
 }
+
+/* Slider Styles */
+.slider-group {
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping if controls get too wide */
+    gap: 15px; /* Space between slider items */
+    justify-content: center;
+    width: 100%; /* Take full width within the overlay */
+}
+
+.slider-group > div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 5px 10px;
+    border-radius: 4px;
+    min-width: 200px; /* Ensure items don't get too squished */
+}
+
+.slider-group label {
+    font-size: 12px;
+    white-space: nowrap; /* Prevent label text from wrapping */
+    min-width: 80px; /* Align labels */
+    text-align: right;
+}
+
+.slider-group input[type="range"] {
+    flex-grow: 1; /* Allow slider to take up remaining space */
+    cursor: pointer;
+    height: 8px;
+    background: #555;
+    border-radius: 4px;
+    appearance: none; /* Override default look */
+    outline: none;
+}
+
+/* Style the thumb (the draggable handle) */
+.slider-group input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #ddd;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.slider-group input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #ddd;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none; /* Remove default border in Firefox */
+}
+
+.slider-group span {
+    font-size: 12px;
+    min-width: 30px; /* Give space for value display */
+    text-align: right;
+    background-color: rgba(0,0,0,0.3);
+    padding: 2px 4px;
+    border-radius: 3px;
+}
