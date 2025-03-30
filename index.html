@@ -14,7 +14,8 @@
     </div>
     
     <div id="controls-overlay">
-        <div class="control-group">
+        <!-- Group 1: File & Style -->
+        <div class="control-group file-style-group">
             <label for="imageUpload" class="upload-btn" title="Click to choose an image">
                 Choose Image
                 <input type="file" id="imageUpload" accept="image/*" />
@@ -24,51 +25,54 @@
                 <option value="normal" selected>Normal</option>
             </select>
         </div>
-        <div class="control-group">
+        
+        <!-- Group 2: Playback & Save -->
+        <div class="control-group playback-save-group">
             <button id="startBtn" title="Space to play/pause">Start Animation</button>
             <button id="restartBtn" title="Press 'R' to restart">Restart</button>
             <button id="saveBtn" title="Ctrl/Cmd + S to save">Save Artwork</button>
         </div>
-        <div class="control-group slider-group">
-          <div>
-            <label for="resSlider">Resolution:</label>
-            <input type="range" id="resSlider" min="0.001" max="0.02" step="0.0001" value="0.007">
-            <span id="resValue">0.007</span>
-          </div>
-          <div>
-            <label for="dmpSlider">Damping:</label>
-            <input type="range" id="dmpSlider" min="0.5" max="0.95" step="0.01" value="0.75">
-            <span id="dmpValue">0.75</span>
-          </div>
-        </div>
-        <div class="control-group slider-group">
-          <div>
-            <label for="alphaSlider">Alpha:</label>
-            <input type="range" id="alphaSlider" min="1" max="50" step="1" value="15">
-            <span id="alphaValue">15</span>
-          </div>
-          <div>
-            <label for="limitSlider">Limit:</label>
-            <input type="range" id="limitSlider" min="500" max="5000" step="100" value="2000">
-            <span id="limitValue">2000</span>
-          </div>
-           <div>
-            <label for="sidesSlider">Sides:</label>
-            <input type="range" id="sidesSlider" min="3" max="20" step="1" value="10">
-            <span id="sidesValue">10</span>
-          </div>
-        </div>
-         <div class="control-group slider-group">
-          <div>
-            <label for="repRadiusSlider">Repel Radius:</label>
-            <input type="range" id="repRadiusSlider" min="10" max="300" step="10" value="100">
-            <span id="repRadiusValue">100</span>
-          </div>
-          <div>
-            <label for="repStrengthSlider">Repel Strength:</label>
-            <input type="range" id="repStrengthSlider" min="0" max="2" step="0.1" value="0.5">
-            <span id="repStrengthValue">0.5</span>
-          </div>
+
+        <!-- Group 3: Sliders -->
+        <div class="control-group all-sliders-group">
+            <!-- Row 1 -->
+            <div>
+              <label for="resSlider">Resolution:</label>
+              <input type="range" id="resSlider" min="0.001" max="0.02" step="0.0001" value="0.007">
+              <span id="resValue">0.007</span>
+            </div>
+            <div>
+              <label for="dmpSlider">Damping:</label>
+              <input type="range" id="dmpSlider" min="0.5" max="0.95" step="0.01" value="0.75">
+              <span id="dmpValue">0.75</span>
+            </div>
+            <div>
+              <label for="alphaSlider">Alpha:</label>
+              <input type="range" id="alphaSlider" min="1" max="50" step="1" value="15">
+              <span id="alphaValue">15</span>
+            </div>
+            <!-- Row 2 -->
+            <div>
+              <label for="limitSlider">Limit:</label>
+              <input type="range" id="limitSlider" min="500" max="5000" step="100" value="2000">
+              <span id="limitValue">2000</span>
+            </div>
+            <div>
+              <label for="sidesSlider">Sides:</label>
+              <input type="range" id="sidesSlider" min="3" max="20" step="1" value="10">
+              <span id="sidesValue">10</span>
+            </div>
+             <div>
+              <label for="repRadiusSlider">Repel Radius:</label>
+              <input type="range" id="repRadiusSlider" min="10" max="300" step="10" value="100">
+              <span id="repRadiusValue">100</span>
+            </div>
+            <!-- Row 3 -->
+             <div>
+              <label for="repStrengthSlider">Repel Strength:</label>
+              <input type="range" id="repStrengthSlider" min="0" max="2" step="0.1" value="0.5">
+              <span id="repStrengthValue">0.5</span>
+            </div>
         </div>
     </div>
     
