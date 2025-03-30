@@ -11,6 +11,7 @@ let alpha = 15;
 let sides = 10;
 let angle;
 let pxl;
+let kaleidoscopeRotationOffset = 0; // For animated rotation
 let isLoading = false;
 let isLooping = false;
 let canvas;
@@ -302,13 +303,16 @@ function draw() {
   blendMode(ADD);
   strokeWeight(strokeW);
   
+  // Increment rotation offset for animation
+  kaleidoscopeRotationOffset += 0.05; // Adjust speed as desired
+  
   // Mouse position (relative for kaleidoscope if needed, but global better for repulsion)
   let mouseVec = createVector(mouseX, mouseY);
 
   if (style === 'kaleidoscope') {
     angle = 360 / sides; // Recalculate angle in case sides changed
     translate(width / 2, height / 2);
-    rotate(angle / 2);
+    rotate(angle / 2 + kaleidoscopeRotationOffset); // Add animated offset
     
     for(i=0;i<4;i++){
       pts.push(makept(true));
@@ -338,12 +342,21 @@ function draw() {
       pt.velocity.mult(dmp);
       move(pt);
 
+      // --- Velocity-based size calculation ---
+      let speed = pt.velocity.mag();
+      // Map speed to a multiplier. Adjust ranges as needed.
+      // Faster particles get slightly thicker (e.g., 0.8x to 1.5x base size)
+      let maxSpeedForEffect = 5 * pxl; // Max speed expected to influence size
+      let speedFactor = constrain(map(speed, 0, maxSpeedForEffect, 0.8, 1.5), 0.8, 1.5);
+      let finalStrokeW = pt.strokeW * speedFactor;
+      // --- End velocity-based size ---
+
       // Color shifting based on life
       let lifeFraction = constrain(pt.life / pt.initialLife, 0, 1);
       let currentAlpha = alpha * lifeFraction;
       let currentColor = color(red(pt.color), green(pt.color), blue(pt.color), currentAlpha);
       stroke(currentColor);
-      strokeWeight(pt.strokeW); // Use particle-specific stroke weight
+      strokeWeight(finalStrokeW); // Use velocity-adjusted stroke weight
       
       // Kaleidoscope style with multiple rotated copies
       for (let i = 0; i < sides; i++) {
@@ -385,12 +398,19 @@ function draw() {
       pt.velocity.mult(dmp);
       move(pt);
 
+      // --- Velocity-based size calculation ---
+      let speed = pt.velocity.mag();
+      let maxSpeedForEffect = 5 * pxl; 
+      let speedFactor = constrain(map(speed, 0, maxSpeedForEffect, 0.8, 1.5), 0.8, 1.5);
+      let finalStrokeW = pt.strokeW * speedFactor;
+      // --- End velocity-based size ---
+
       // Color shifting based on life
       let lifeFraction = constrain(pt.life / pt.initialLife, 0, 1);
       let currentAlpha = alpha * lifeFraction;
       let currentColor = color(red(pt.color), green(pt.color), blue(pt.color), currentAlpha);
       stroke(currentColor);
-      strokeWeight(pt.strokeW); // Use particle-specific stroke weight
+      strokeWeight(finalStrokeW); // Use velocity-adjusted stroke weight
       
       // Normal style with just one point
       point(x, y);
