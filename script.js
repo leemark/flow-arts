@@ -1,6 +1,6 @@
 let img;
 let border = -100;
-let style = 'normal'; // Can be 'kaleidoscope' or 'normal'
+let style = 'kaleidoscope'; // Can be 'kaleidoscope' or 'normal'
 let res = 0.007;
 let dmp = 0.75;
 let pts = [];
@@ -16,6 +16,14 @@ let isLooping = false;
 let canvas;
 let controlsTimeout;
 
+// Mouse Interaction parameters
+let repulsionRadius = 100;
+let repulsionStrength = 0.5; // Adjust as needed
+
+// Sliders refs
+let resSlider, resValueSpan;
+let dmpSlider, dmpValueSpan;
+
 // Store original values for parameters that get scaled
 const ORIGINAL_STROKE_W = 0.8;
 const ORIGINAL_LIFE = 100;
@@ -28,13 +36,39 @@ document.addEventListener('DOMContentLoaded', function() {
         style = this.value;
         if (img) {
             // Restart with new style
-            setup();
+            // Don't reset params, just re-setup background and drawing mode
+            background(0); // Clear background for new style
+            frameCount = 0; // Reset frame count for limit
+            // Keep existing particles
             if (isLooping) {
                 loop();
             } else {
-                noLoop();
+                noLoop(); // Ensure it's stopped if not looping
             }
         }
+    });
+
+    // Setup Sliders
+    resSlider = document.getElementById('resSlider');
+    resValueSpan = document.getElementById('resValue');
+    dmpSlider = document.getElementById('dmpSlider');
+    dmpValueSpan = document.getElementById('dmpValue');
+
+    // Initial slider values
+    resSlider.value = res;
+    resValueSpan.textContent = parseFloat(res).toFixed(4);
+    dmpSlider.value = dmp;
+    dmpValueSpan.textContent = parseFloat(dmp).toFixed(2);
+
+    // Slider listeners
+    resSlider.addEventListener('input', function() {
+        res = parseFloat(this.value);
+        resValueSpan.textContent = parseFloat(res).toFixed(4);
+    });
+
+    dmpSlider.addEventListener('input', function() {
+        dmp = parseFloat(this.value);
+        dmpValueSpan.textContent = parseFloat(dmp).toFixed(2);
     });
 });
 
@@ -64,6 +98,14 @@ function resetParameters() {
     sides = floor(random(5, 16));
     isLooping = false;
     frameCount = 0;
+
+    // Update sliders to reflect randomized values
+    if (resSlider && dmpSlider) {
+        resSlider.value = res;
+        resValueSpan.textContent = parseFloat(res).toFixed(4);
+        dmpSlider.value = dmp;
+        dmpValueSpan.textContent = parseFloat(dmp).toFixed(2);
+    }
 }
 
 // Complete reset and setup with current image
@@ -181,6 +223,7 @@ function setup() {
     // Don't start drawing until we have an image
     if (!img) {
         noLoop();
+        return;
     }
 }
 
@@ -191,9 +234,13 @@ function draw() {
     return;
   }
 
-  blendMode(SCREEN);
+  // Use ADD blend mode for brighter effects
+  blendMode(ADD);
   strokeWeight(strokeW);
   
+  // Mouse position (relative for kaleidoscope if needed, but global better for repulsion)
+  let mouseVec = createVector(mouseX, mouseY);
+
   if (style === 'kaleidoscope') {
     angle = 360 / sides;
     translate(width / 2, height / 2);
@@ -204,6 +251,20 @@ function draw() {
     }
     
     for (let pt of pts) {
+      // Apply mouse repulsion before calculating noise field
+      let particlePos = pt.position;
+      // If kaleidoscope, particle position is relative to center
+      // Transform mouse to particle's coordinate system (approximate - ignores rotation/scale for simplicity)
+      let effectiveMouseVec = createVector(mouseX - width / 2, mouseY - height / 2);
+      let force = p5.Vector.sub(particlePos, effectiveMouseVec);
+      let dist = force.mag();
+
+      if (dist < repulsionRadius * pxl) { // Scale radius too
+          let strength = map(dist, 0, repulsionRadius * pxl, repulsionStrength * pxl, 0); // Scale strength
+          force.setMag(strength); // Make it point away from mouse
+          pt.velocity.add(force);
+      }
+
       let x = pt.position.x;
       let y = pt.position.y;
       let v = new p5.Vector();
@@ -212,7 +273,13 @@ function draw() {
       pt.velocity.add(v);
       pt.velocity.mult(dmp);
       move(pt);
-      stroke(pt.color);
+
+      // Color shifting based on life
+      let lifeFraction = constrain(pt.life / pt.initialLife, 0, 1);
+      let currentAlpha = alpha * lifeFraction;
+      let currentColor = color(red(pt.color), green(pt.color), blue(pt.color), currentAlpha);
+      stroke(currentColor);
+      strokeWeight(pt.strokeW); // Use particle-specific stroke weight
       
       // Kaleidoscope style with multiple rotated copies
       for (let i = 0; i < sides; i++) {
@@ -234,6 +301,17 @@ function draw() {
     }
     
     for (let pt of pts) {
+      // Apply mouse repulsion
+      let particlePos = pt.position;
+      let force = p5.Vector.sub(particlePos, mouseVec); // Use direct mouse coords
+      let dist = force.mag();
+
+      if (dist < repulsionRadius * pxl) {
+          let strength = map(dist, 0, repulsionRadius * pxl, repulsionStrength * pxl, 0);
+          force.setMag(strength);
+          pt.velocity.add(force);
+      }
+
       let x = pt.position.x;
       let y = pt.position.y;
       let v = new p5.Vector();
@@ -242,7 +320,13 @@ function draw() {
       pt.velocity.add(v);
       pt.velocity.mult(dmp);
       move(pt);
-      stroke(pt.color);
+
+      // Color shifting based on life
+      let lifeFraction = constrain(pt.life / pt.initialLife, 0, 1);
+      let currentAlpha = alpha * lifeFraction;
+      let currentColor = color(red(pt.color), green(pt.color), blue(pt.color), currentAlpha);
+      stroke(currentColor);
+      strokeWeight(pt.strokeW); // Use particle-specific stroke weight
       
       // Normal style with just one point
       point(x, y);
@@ -267,8 +351,10 @@ function makept(isKaleidoscope) {
         random(border, height - border)
       ),
       velocity: new p5.Vector(),
-      life: random(0, life),
-      color: color(random(255), random(255), random(255), 20)
+      life: 0, // Will be calculated
+      initialLife: 0, // Store initial life for fading
+      strokeW: 0, // Will be calculated
+      color: color(random(255), random(255), random(255), 20) // Default placeholder
     };
     
     // Safely get color from image with bounds checking
@@ -278,9 +364,33 @@ function makept(isKaleidoscope) {
       
       let imgColor = img.get(sx, sy);
       if (imgColor) {
-        tmp.color = color(imgColor);
-        tmp.color.setAlpha(alpha);
+        tmp.color = color(imgColor); // Base color from image
+        tmp.color.setAlpha(alpha); // Set initial alpha
+
+        // Calculate size and life based on brightness
+        let brightnessVal = brightness(imgColor); // 0-255 usually
+
+        // Map brightness to stroke weight (e.g., brighter = thicker)
+        // Ensure minimum stroke weight is reasonable, like 0.1 * pxl
+        tmp.strokeW = map(brightnessVal, 0, 255, max(0.1 * pxl, ORIGINAL_STROKE_W * pxl * 0.5), ORIGINAL_STROKE_W * pxl * 1.5);
+
+        // Map brightness to initial life (e.g., brighter = longer life)
+        tmp.initialLife = map(brightnessVal, 0, 255, ORIGINAL_LIFE * pxl * 0.5, ORIGINAL_LIFE * pxl * 1.5);
+        tmp.life = tmp.initialLife; // Set current life
+
+      } else {
+          // Fallback if color couldn't be read (shouldn't happen with constrain)
+          tmp.strokeW = ORIGINAL_STROKE_W * pxl;
+          tmp.initialLife = ORIGINAL_LIFE * pxl;
+          tmp.life = tmp.initialLife;
+          tmp.color.setAlpha(alpha); // Ensure fallback has alpha
       }
+    } else {
+        // Fallback if no image dimensions (e.g., loading error)
+        tmp.strokeW = ORIGINAL_STROKE_W * pxl;
+        tmp.initialLife = ORIGINAL_LIFE * pxl;
+        tmp.life = tmp.initialLife;
+        tmp.color = color(200, 200, 200, alpha); // Default color
     }
     
     return tmp;
@@ -303,6 +413,7 @@ function move(pt) {
 
 function clean() {
   for (let i = pts.length - 1; i >= 0; i--) {
+    // Use pts[i].life directly as it's decremented in move()
     if (pts[i].life <= 0) {
       pts.splice(i, 1);
     }

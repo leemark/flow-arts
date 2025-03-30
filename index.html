@@ -29,6 +29,18 @@
             <button id="restartBtn" title="Press 'R' to restart">Restart</button>
             <button id="saveBtn" title="Ctrl/Cmd + S to save">Save Artwork</button>
         </div>
+        <div class="control-group slider-group">
+          <div>
+            <label for="resSlider">Resolution:</label>
+            <input type="range" id="resSlider" min="0.001" max="0.02" step="0.0001" value="0.007">
+            <span id="resValue">0.007</span>
+          </div>
+          <div>
+            <label for="dmpSlider">Damping:</label>
+            <input type="range" id="dmpSlider" min="0.5" max="0.95" step="0.01" value="0.75">
+            <span id="dmpValue">0.75</span>
+          </div>
+        </div>
     </div>
     
     <div id="canvasContainer"></div>
