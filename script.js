@@ -63,11 +63,16 @@ function hideWelcome() {
 
 // Update status bar
 function updateStatusBar() {
-    // Update frame counter
-    document.getElementById('frameCounter').textContent = frameCount;
-
-    // Update particle counter
-    document.getElementById('particleCounter').textContent = pts.length;
+    // Check if p5.js is initialized (frameCount is a p5.js global)
+    if (typeof frameCount === 'undefined') {
+        // p5.js not ready yet, set defaults
+        document.getElementById('frameCounter').textContent = '0';
+        document.getElementById('particleCounter').textContent = '0';
+    } else {
+        // p5.js is ready, use actual values
+        document.getElementById('frameCounter').textContent = frameCount;
+        document.getElementById('particleCounter').textContent = pts.length;
+    }
 
     // Update animation status
     const statusIndicator = document.getElementById('animStatus');
