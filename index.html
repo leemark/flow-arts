@@ -3,81 +3,283 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flow Arts Interactive</title>
+    <title>Flow Arts Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
 </head>
 <body>
-    <div id="loading-overlay">
-        <div class="spinner"></div>
-        <div>Processing image...</div>
-    </div>
-    
-    <div id="controls-overlay">
-        <!-- Group 1: File & Style -->
-        <div class="control-group file-style-group">
-            <label for="imageUpload" class="upload-btn" title="Click to choose an image">
-                Choose Image
-                <input type="file" id="imageUpload" accept="image/*" />
-            </label>
-            <select id="styleSelector" title="Press 'K' to toggle style">
-                <option value="kaleidoscope">Kaleidoscope</option>
-                <option value="normal" selected>Normal</option>
-            </select>
-        </div>
-        
-        <!-- Group 2: Playback & Save -->
-        <div class="control-group playback-save-group">
-            <button id="startBtn" title="Space to play/pause">Start Animation</button>
-            <button id="restartBtn" title="Press 'R' to restart">Restart</button>
-            <button id="saveBtn" title="Ctrl/Cmd + S to save">Save Artwork</button>
-        </div>
+    <!-- Animated Background -->
+    <div class="background-gradient"></div>
 
-        <!-- Group 3: Sliders -->
-        <div class="control-group all-sliders-group">
-            <!-- Row 1 -->
-            <div>
-              <label for="resSlider">Resolution:</label>
-              <input type="range" id="resSlider" min="0.001" max="0.02" step="0.0001" value="0.007">
-              <span id="resValue">0.007</span>
+    <!-- Welcome Overlay -->
+    <div id="welcome-overlay">
+        <div class="welcome-content">
+            <h1 class="app-title">Flow Arts Studio</h1>
+            <p class="app-subtitle">Transform images into mesmerizing particle flows</p>
+            <label for="welcomeImageUpload" class="welcome-upload-zone">
+                <div class="upload-icon">↑</div>
+                <div class="upload-text">Drop an image or click to browse</div>
+                <div class="upload-hint">JPG, PNG, GIF • Max 10MB</div>
+                <input type="file" id="welcomeImageUpload" accept="image/*" />
+            </label>
+            <button id="skipWelcome" class="link-button">Skip and explore</button>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div class="loading-text">Processing image...</div>
+        </div>
+    </div>
+
+    <!-- Main Control Panel -->
+    <aside id="controls-overlay" role="complementary" aria-label="Main controls">
+        <header class="controls-header">
+            <h2 class="controls-title">Flow Arts Studio</h2>
+            <button id="helpBtn" class="icon-btn" title="Keyboard shortcuts (?)">
+                <span class="icon">?</span>
+            </button>
+        </header>
+
+        <!-- Primary Controls -->
+        <section class="control-section primary-controls">
+            <div class="control-row">
+                <label for="imageUpload" class="upload-btn glass-btn">
+                    <span class="icon">📁</span>
+                    <span>Choose Image</span>
+                    <input type="file" id="imageUpload" accept="image/*" />
+                </label>
+                <select id="styleSelector" class="glass-select" aria-label="Visualization style">
+                    <option value="kaleidoscope">🔮 Kaleidoscope</option>
+                    <option value="normal" selected>✨ Normal Flow</option>
+                </select>
             </div>
-            <div>
-              <label for="dmpSlider">Damping:</label>
-              <input type="range" id="dmpSlider" min="0.5" max="0.95" step="0.01" value="0.75">
-              <span id="dmpValue">0.75</span>
+            <div class="control-row playback-controls">
+                <button id="startBtn" class="glass-btn primary-btn" aria-label="Start or pause animation">
+                    <span class="icon">▶</span>
+                    <span>Start</span>
+                </button>
+                <button id="restartBtn" class="glass-btn secondary-btn" aria-label="Restart animation">
+                    <span class="icon">⟲</span>
+                    <span>Restart</span>
+                </button>
+                <button id="randomizeBtn" class="glass-btn secondary-btn" aria-label="Randomize parameters">
+                    <span class="icon">🎲</span>
+                    <span>Randomize</span>
+                </button>
+                <button id="saveBtn" class="glass-btn accent-btn" aria-label="Save artwork">
+                    <span class="icon">💾</span>
+                    <span>Save</span>
+                </button>
             </div>
-            <div>
-              <label for="alphaSlider">Alpha:</label>
-              <input type="range" id="alphaSlider" min="1" max="50" step="1" value="15">
-              <span id="alphaValue">15</span>
-            </div>
-            <!-- Row 2 -->
-            <div>
-              <label for="limitSlider">Limit:</label>
-              <input type="range" id="limitSlider" min="500" max="5000" step="100" value="2000">
-              <span id="limitValue">2000</span>
-            </div>
-            <div>
-              <label for="sidesSlider">Sides:</label>
-              <input type="range" id="sidesSlider" min="3" max="20" step="1" value="10">
-              <span id="sidesValue">10</span>
-            </div>
-             <div>
-              <label for="repRadiusSlider">Repel Radius:</label>
-              <input type="range" id="repRadiusSlider" min="10" max="300" step="10" value="100">
-              <span id="repRadiusValue">100</span>
-            </div>
-            <!-- Row 3 -->
-             <div>
-              <label for="repStrengthSlider">Repel Strength:</label>
-              <input type="range" id="repStrengthSlider" min="0" max="2" step="0.1" value="0.5">
-              <span id="repStrengthValue">0.5</span>
+        </section>
+
+        <!-- Collapsible Sections -->
+        <div class="collapsible-sections">
+            <!-- Appearance Section -->
+            <section class="control-section collapsible">
+                <button class="section-header" data-section="appearance">
+                    <span class="section-icon">🎨</span>
+                    <span class="section-title">Appearance</span>
+                    <span class="chevron">›</span>
+                </button>
+                <div class="section-content" id="appearance-content">
+                    <div class="slider-control">
+                        <label for="alphaSlider">
+                            <span class="label-text">Opacity</span>
+                            <span class="label-hint">Trail transparency</span>
+                        </label>
+                        <div class="slider-wrapper">
+                            <input type="range" id="alphaSlider" min="1" max="50" step="1" value="15" aria-label="Particle opacity">
+                            <span class="slider-value" id="alphaValue">15</span>
+                        </div>
+                    </div>
+                    <div class="slider-control">
+                        <label for="blendModeSelector">
+                            <span class="label-text">Blend Mode</span>
+                            <span class="label-hint">How particles combine</span>
+                        </label>
+                        <select id="blendModeSelector" class="glass-select small">
+                            <option value="ADD">Additive (Bright)</option>
+                            <option value="BLEND">Normal Blend</option>
+                            <option value="MULTIPLY">Multiply (Dark)</option>
+                            <option value="SCREEN">Screen (Glow)</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Flow Field Section -->
+            <section class="control-section collapsible">
+                <button class="section-header" data-section="flow">
+                    <span class="section-icon">🌊</span>
+                    <span class="section-title">Flow Field</span>
+                    <span class="chevron">›</span>
+                </button>
+                <div class="section-content" id="flow-content">
+                    <div class="slider-control">
+                        <label for="resSlider">
+                            <span class="label-text">Resolution</span>
+                            <span class="label-hint">Detail level</span>
+                        </label>
+                        <div class="slider-wrapper">
+                            <input type="range" id="resSlider" min="0.001" max="0.02" step="0.0001" value="0.007" aria-label="Flow field resolution">
+                            <span class="slider-value" id="resValue">0.007</span>
+                        </div>
+                    </div>
+                    <div class="slider-control">
+                        <label for="dmpSlider">
+                            <span class="label-text">Damping</span>
+                            <span class="label-hint">Motion smoothness</span>
+                        </label>
+                        <div class="slider-wrapper">
+                            <input type="range" id="dmpSlider" min="0.5" max="0.95" step="0.01" value="0.75" aria-label="Velocity damping">
+                            <span class="slider-value" id="dmpValue">0.75</span>
+                        </div>
+                    </div>
+                    <div class="slider-control">
+                        <label for="animSpeedSlider">
+                            <span class="label-text">Animation Speed</span>
+                            <span class="label-hint">Rotation velocity</span>
+                        </label>
+                        <div class="slider-wrapper">
+                            <input type="range" id="animSpeedSlider" min="0" max="0.2" step="0.01" value="0.05" aria-label="Animation speed">
+                            <span class="slider-value" id="animSpeedValue">0.05</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Kaleidoscope Section -->
+            <section class="control-section collapsible" id="kaleidoscope-section">
+                <button class="section-header" data-section="kaleidoscope">
+                    <span class="section-icon">🔮</span>
+                    <span class="section-title">Kaleidoscope</span>
+                    <span class="chevron">›</span>
+                </button>
+                <div class="section-content" id="kaleidoscope-content">
+                    <div class="slider-control">
+                        <label for="sidesSlider">
+                            <span class="label-text">Symmetry Sides</span>
+                            <span class="label-hint">Mirror segments</span>
+                        </label>
+                        <div class="slider-wrapper">
+                            <input type="range" id="sidesSlider" min="3" max="20" step="1" value="10" aria-label="Number of kaleidoscope sides">
+                            <span class="slider-value" id="sidesValue">10</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Mouse Interaction Section -->
+            <section class="control-section collapsible">
+                <button class="section-header" data-section="mouse">
+                    <span class="section-icon">👆</span>
+                    <span class="section-title">Mouse Interaction</span>
+                    <span class="chevron">›</span>
+                </button>
+                <div class="section-content" id="mouse-content">
+                    <div class="slider-control">
+                        <label for="repRadiusSlider">
+                            <span class="label-text">Repel Radius</span>
+                            <span class="label-hint">Area of effect</span>
+                        </label>
+                        <div class="slider-wrapper">
+                            <input type="range" id="repRadiusSlider" min="10" max="300" step="10" value="100" aria-label="Mouse repulsion radius">
+                            <span class="slider-value" id="repRadiusValue">100</span>
+                        </div>
+                    </div>
+                    <div class="slider-control">
+                        <label for="repStrengthSlider">
+                            <span class="label-text">Repel Strength</span>
+                            <span class="label-hint">Force intensity</span>
+                        </label>
+                        <div class="slider-wrapper">
+                            <input type="range" id="repStrengthSlider" min="0" max="2" step="0.1" value="0.5" aria-label="Mouse repulsion strength">
+                            <span class="slider-value" id="repStrengthValue">0.5</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Animation Section -->
+            <section class="control-section collapsible">
+                <button class="section-header" data-section="animation">
+                    <span class="section-icon">⏱️</span>
+                    <span class="section-title">Animation</span>
+                    <span class="chevron">›</span>
+                </button>
+                <div class="section-content" id="animation-content">
+                    <div class="slider-control">
+                        <label for="limitSlider">
+                            <span class="label-text">Frame Limit</span>
+                            <span class="label-hint">Auto-stop after frames</span>
+                        </label>
+                        <div class="slider-wrapper">
+                            <input type="range" id="limitSlider" min="500" max="5000" step="100" value="2000" aria-label="Maximum frame count">
+                            <span class="slider-value" id="limitValue">2000</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </aside>
+
+    <!-- Status Bar -->
+    <div id="status-bar" class="glass-panel">
+        <div class="status-item">
+            <span class="status-label">Frame:</span>
+            <span class="status-value" id="frameCounter">0</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">Particles:</span>
+            <span class="status-value" id="particleCounter">0</span>
+        </div>
+        <div class="status-item status-indicator" id="animStatus">
+            <span class="pulse-dot"></span>
+            <span class="status-value">Ready</span>
+        </div>
+    </div>
+
+    <!-- Keyboard Shortcuts Help -->
+    <div id="shortcuts-overlay" class="modal-overlay">
+        <div class="modal-content glass-panel">
+            <header class="modal-header">
+                <h3>Keyboard Shortcuts</h3>
+                <button class="close-btn" id="closeShortcuts">×</button>
+            </header>
+            <div class="shortcuts-grid">
+                <div class="shortcut-item">
+                    <kbd>Space</kbd>
+                    <span>Play / Pause</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>R</kbd>
+                    <span>Restart</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>K</kbd>
+                    <span>Toggle Style</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Ctrl</kbd> + <kbd>S</kbd>
+                    <span>Save Artwork</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>?</kbd>
+                    <span>Show Shortcuts</span>
+                </div>
             </div>
         </div>
     </div>
-    
+
     <div id="canvasContainer"></div>
-    
+
     <script src="script.js"></script>
 </body>
 </html> 
