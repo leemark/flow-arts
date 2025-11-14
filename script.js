@@ -14,7 +14,7 @@ let angle;
 let pxl;
 let kaleidoscopeRotationOffset = 0;
 let animationSpeed = 0.05; // NEW: Configurable animation speed
-let currentBlendMode = ADD; // NEW: Configurable blend mode
+let currentBlendMode = 'ADD'; // NEW: Configurable blend mode (string, converted to constant in draw())
 let isLoading = false;
 let isLooping = false;
 let canvas;
@@ -240,23 +240,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // === BLEND MODE SELECTOR ===
     const blendModeSelector = document.getElementById('blendModeSelector');
     blendModeSelector.addEventListener('change', function() {
-        const mode = this.value;
-        switch(mode) {
-            case 'ADD':
-                currentBlendMode = ADD;
-                break;
-            case 'BLEND':
-                currentBlendMode = BLEND;
-                break;
-            case 'MULTIPLY':
-                currentBlendMode = MULTIPLY;
-                break;
-            case 'SCREEN':
-                currentBlendMode = SCREEN;
-                break;
-            default:
-                currentBlendMode = ADD;
-        }
+        // Store as string, will be converted to p5.js constant in draw()
+        currentBlendMode = this.value;
     });
 
     // === SLIDERS SETUP ===
@@ -519,8 +504,25 @@ function draw() {
         return;
     }
 
-    // Use selected blend mode
-    blendMode(currentBlendMode);
+    // Convert blend mode string to p5.js constant
+    let blendModeConstant;
+    switch(currentBlendMode) {
+        case 'ADD':
+            blendModeConstant = ADD;
+            break;
+        case 'BLEND':
+            blendModeConstant = BLEND;
+            break;
+        case 'MULTIPLY':
+            blendModeConstant = MULTIPLY;
+            break;
+        case 'SCREEN':
+            blendModeConstant = SCREEN;
+            break;
+        default:
+            blendModeConstant = ADD;
+    }
+    blendMode(blendModeConstant);
     strokeWeight(strokeW);
 
     // Increment rotation offset for animation (using configurable speed)
